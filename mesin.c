@@ -1,0 +1,363 @@
+#include "header.h"
+
+int idx; // index
+int wlen; // panjang current word
+char cw[250]; // current word
+
+// nyalakan mesin
+void start(char pita[]){
+    // set index dan panjang kata menjadi 0
+    idx = 0;
+    wlen = 0;
+
+
+    while (pita[idx] == '#'){ // ignore pagar
+        idx++;
+    }
+
+
+    // ambil kata masukkan dalam current word
+    while ((pita[idx] != '#') && (pita[idx] != '\0') && (pita[idx] != '\n')){ // ambil kata 
+        cw[wlen] = pita[idx];
+        wlen++;
+        idx++;
+    }
+    cw[wlen] = '\0'; // akhiri dengan null terminator
+}
+
+
+// pindah next kata
+void inc(char pita[]){
+    wlen = 0; // set panjang kata jadi 0 (memastikan)
+
+
+    while (pita[idx] == '#'){ // ignore blank
+        idx++;
+    }
+
+
+    // masukkan kata baru
+    while ((pita[idx] != '#') && (pita[idx] != '\0') && (pita[idx] != '\n')){
+        cw[wlen] = pita[idx];
+        wlen++;
+        idx++;
+    }
+    cw[wlen] = '\0'; // akhiri lagi
+}
+
+// mengembalikan current word
+char* getcw(){
+    return cw;
+}
+
+
+void makeTree(char nama_simpul[], tree *T) { // prosedur membuat tree
+    simpul *node = (simpul *)malloc(sizeof(simpul));
+    strcpy(node->kontainer.nama_simpul, nama_simpul);
+    node->sibling = NULL;
+    node->child = NULL;
+    node->col = NULL;
+    (*T).root = node;
+}
+
+void addChild(char nama_simpul[], simpul *root) {
+    if (root != NULL) {
+        /* jika simpul root tidak kosong, berarti dapat ditambahkan simpul anak */
+        simpul *baru = (simpul *)malloc(sizeof(simpul));
+        strcpy(baru->kontainer.nama_simpul, nama_simpul);
+        baru->child = NULL;
+        baru->col = NULL;
+
+        if (root->child == NULL) {
+            /* jika simpul root belum memiliki simpul anak 
+            maka simpul baru menjadi anak pertama */
+            baru->sibling = NULL;
+            root->child = baru;
+        } else {
+            if (root->child->sibling == NULL) {
+                /* jika simpul root memiliki 
+                anak yang belum memiliki saudara, maka 
+                simpul baru menjadi anak kedua */
+                baru->sibling = root->child;
+                root->child->sibling = baru;
+            } else {
+                simpul *last = root->child;
+                /* mencari simpul anak terakhir 
+                karena akan dikaitkan dengan simpul 
+                baru sebagai simpul anak terakhir yang 
+                baru, simpul anak terakhir adalah yang 
+                memiliki sibling simpul anak pertama, 
+                maka selama belum sampai pada simpul 
+                anak terakhir, penunjuk last akan 
+                berjalan ke simpul anak berikutnya */
+                while (last->sibling != root->child) {
+                    last = last->sibling;
+                }
+                baru->sibling = root->child;
+                last->sibling = baru;
+            }
+        }
+    }
+}
+
+void del_simpul(simpul* root){
+    // cek kondisi jika root ada
+    if (root != NULL) {
+        // cek kondisi jika root (parent) punya anak
+        if (root->child != NULL) {
+            // kondisi ketika hanya ada satu anak di root
+            if (root->child->sibling == NULL) {
+                del_simpul(root->child); // Rekursif hapus simpul ke anak
+            }else{ // kondisi ketika lebih dari satu anak di root
+                simpul* current; // pointer untuk iterasi
+                simpul* target; // pointer untuk simpul yang akan dihapus
+
+                // inisialisasi current dengan anak pertama
+                current = root->child;
+        
+                // Loop untuk menghapus semua anak sampai kembali ke anak pertama (sekuential)
+                while (current->sibling != root->child) {
+                    target = current;
+                    current = current->sibling;
+                    del_simpul(target); // hapus simpul target secara rekursif
+                }
+                // Hapus anak terakhir (yang belum terhapus di dalam loop)
+                if (current != NULL){
+                    del_simpul(current);
+                }
+            }
+        }
+        // Setelah semua anak dihapus, hapus simpul root itu sendiri
+        free(root);
+    }
+}
+
+void del_child(simpul* target, simpul* root){
+    // kondisi ketika root ada
+    if (root != NULL && target != NULL) {
+        simpul* current = root->child;
+        if (current != NULL) {
+            // kondisi ketika hanya ada satu anak
+            if (current->sibling == NULL) {
+                // kondisi ketika anak merupakan target yang mau dihapus
+                if (root->child == target) {
+                    del_simpul(root->child);
+                    root->child = NULL; // Set child to NULL
+                } else
+                    printf("[!] Node %s has only one child (%s) and it's not the target", root->kontainer.nama_simpul, root->child->kontainer.nama_simpul);
+            }else { // kondisi ketika lebih dari satu anak
+                simpul* prev = NULL; // inisialisasi pointer prev dengan NULL
+                int found = 0; // set var found = 0 (flag)
+
+                // loop sampai semua anak dicek (sampai anak pertama)
+                while (current->sibling != root->child && found == 0) {
+                    // jika target ditemukan
+                    if (current == target)
+                        found = 1;
+                    else {
+                        prev = current;
+                        current = current->sibling;
+                    }
+                }
+
+                // cek apakah anak terakhir adalah simpul target yang ingin dihapus
+                if (current == target && found == 0)
+                    found = 1; // tandai bahwa target ditemukan
+                if (found == 1) {
+                    simpul* last = root->child;
+
+                    // mencari anak terakhir
+                    while (last->sibling != root->child) {
+                        last = last->sibling;
+                    }
+
+                    // Jika prev == NULL, berarti simpul target adalah anak pertama
+                    if (prev == NULL) {
+                        // Kondisi ketika ada 2 anak dan target adalah anak pertama
+                        if (current->sibling == last && last->sibling == root->child) {
+                            root->child = last;
+                            last->sibling = NULL;
+                        }else { // Kondisi ketika ada lebih dari 2 anak dan target adalah anak pertama
+                            root->child = current->sibling;
+                            last->sibling = root->child;
+                        }
+                    }else{ // jika target bukan anak pertama
+                        // Mencari anak kedua untuk memeriksa apakah hanya ada 2 anak
+                        simpul* second_child = root->child->sibling;
+                        // kondisi ketika target adalah anak terakhir dan hanya ada 2 anak
+                        if (prev == root->child && second_child->sibling == root->child) {
+                            root->child->sibling = NULL; // putuskan pointer ke sibling (tinggal satu anak)
+                        }
+                        // kondisi ketika target adalah anak terakhir dan ada lebih dari 2 anak
+                        else {
+                            prev->sibling = current->sibling;
+                            current->sibling = NULL; // putuskan sibling simpul
+                        }
+                    }
+                    // hapus simpul target
+                    del_simpul(current);
+                } else{
+                    printf("[!] Node with the name %s is not found", target->kontainer.nama_simpul);
+                }
+            }
+        }
+    }
+}
+
+
+simpul* findSimpul(char nama_simpul[], simpul* root){ // function mencari simpul target
+    simpul* result = NULL;
+    // kondisi ketika root ada
+    if (root != NULL) {
+        // jika target ditemukan di root
+        if (strcmp(root->kontainer.nama_simpul, nama_simpul) == 0)
+            result = root;
+        else { // jika target bukan root (berarti target anak cucunya)
+            simpul* current = root->child;
+            // Cek apakah root punya anak
+            if (current != NULL) {
+                // jika current hanya satu anak
+                if (current->sibling == NULL) {
+                    if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0)
+                        result = current; // isi result dengan current
+                    else{
+                        result = findSimpul(nama_simpul, current); // Jika bukan, cari secara rekursif di anak
+                    }
+                }else {
+                    int found = 0;
+                    // Jika memiliki lebih dari satu anak
+                    while (current->sibling != root->child && found == 0) {
+                        // Found condition
+                        if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0){
+                            result = current;
+                            found = 1;
+                        }else {// jika tidak ditemukan, cari ke anak
+                            result = findSimpul(nama_simpul, current);
+                            current = current->sibling;
+                            if (result != NULL){
+                                found = 1;
+                            }
+                        }
+                    }
+                    // proses anak terakhir
+                    if (found == 0) {
+                        if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0)
+                            result = current; // Found condition
+                        else{
+                            result = findSimpul(nama_simpul, current); // jika tidak ditemukan cari lagi secara rekursif
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result; // mengembalikan hasil
+}
+
+void addFirstK(char konsekuensi[], simpul *root) {     
+    eKolom *baru;   
+    baru = (eKolom *) malloc(sizeof(eKolom));   
+    strcpy(baru->kontainer_kol.konsekuensi, konsekuensi);             
+    
+
+    if((*root).col == NULL) {     
+        baru->next_kol = NULL;   
+    } else {         
+        baru->next_kol = (*root).col;   
+    }   
+    
+    (*root).col = baru;   
+    baru = NULL;    
+}
+
+void addAfterK(eKolom *prev, char konsekuensi[]) {      
+    eKolom *baru; 
+    baru = (eKolom *) malloc(sizeof(eKolom)); 
+    strcpy(baru->kontainer_kol.konsekuensi, konsekuensi); 
+    
+
+    if(prev->next_kol == NULL) {      
+        baru->next_kol = NULL; 
+    } else { 
+        baru->next_kol = prev->next_kol;   
+    }   
+    
+    prev->next_kol = baru;   
+    baru = NULL;   
+}
+
+void addLastK(char konsekuensi[], simpul *root) { 
+    if((*root).col == NULL) {     
+        /* jika list adalah list kosong */     
+        addFirstK(konsekuensi, root); 
+    } else {     
+        /* jika list tidak kosong */     
+        /* mencari elemen terakhir list */      
+        eKolom *last = (*root).col;  
+        while(last->next_kol != NULL) {       
+            /* iterasi */       
+            last = last->next_kol;           
+        }     
+        addAfterK(last, konsekuensi); 
+    }  
+}
+
+
+void printTreePreOrder(simpul *root , int level, int cabang){ // print tree preorder dengan indentasi dan cabang (final revisi)
+    if (root != NULL) { 
+        // int spasi = (level - 1) * 4; // menghitung jumlah spasi setiap level (untuk indentasi)
+        // if (level > 0) { // Kalau bukan root, print indentasi dan garis cabang dulu
+        //     for (int i = 0; i < spasi + 1; i++) { // print spasi
+        //         printf(" ");
+        //     }
+        // }
+        
+        /*
+        cabang = -1 menandakan bahwa simpul tersebut merupakan root dari file system
+        cabang = 1 menandakan bahwa simpul tersebut merupakan anak tunggal atau anak terakhir
+        cabang = 0 menandakan bahwa simpul tersebut bukan merupakan anak tunggal atau bukan anak terakhir
+        */
+
+        // print cabang
+        // if(cabang == 0){
+        //     printf("├──");
+        // }else if(cabang == 1){
+        //     printf("└──");
+        // }
+       
+        // if (root->kontainer.isdirectory == 1) { // print direktori
+        //     printf("[d] %s (%dkB)\n", root->kontainer.nama, root->kontainer.size);
+        // } else { // print file
+        //     printf("[f] %s (%dkB)\n", root->kontainer.nama, root->kontainer.size);
+        // }
+
+        printf("[simpul] %s\n", root->kontainer.nama_simpul);
+        eKolom *eCol = root->col;
+        while(eCol != NULL){
+            printf("-%s\n", eCol->kontainer_kol.konsekuensi);
+            eCol = eCol->next_kol;
+        }
+        printf("\n");
+        simpul *bantu = root->child; // isi pointer bantu dengan child untuk loop
+
+        if (bantu != NULL) {
+            if (bantu->sibling == NULL) {
+                /* jika memiliki satu simpul anak */
+                cabang = 1;
+                printTreePreOrder(bantu, level + 1, cabang); // rekursif
+            } else {
+                /* jika memiliki banyak simpul anak */
+                /* mencetak simpul anak */
+                cabang = 0;
+                while (bantu->sibling != root->child) {
+                    printTreePreOrder(bantu, level + 1, cabang);
+                    bantu = bantu->sibling;
+                }
+                /* memproses simpul anak terakhir karena belum terproses dalam pengulangan */
+                cabang = 1;
+                printTreePreOrder(bantu, level + 1, cabang); // rekursif
+            }
+        }
+    }
+}
+
