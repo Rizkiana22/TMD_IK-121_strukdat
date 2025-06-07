@@ -1,4 +1,4 @@
-*.c exe
+*.exe
 *.out
 *.o
 run
