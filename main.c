@@ -12,16 +12,7 @@ int main() {
     scanf("%d", &n);
     simpul *cari = NULL;
     for(int i = 0; i < n; i++){
-        scanf(" %299[^\n]s", pita); // memasukan command
-
-        start(pita);
-        strcpy(nama_simpul, getcw());
-
-        inc(pita);
-        strcpy(nama_ortu, getcw());
-
-        inc(pita);
-        jumlah_konsekuensi = atoi(getcw());
+        scanf(" %[^#\n]#%[^#\n]#%d", nama_simpul, nama_ortu, &jumlah_konsekuensi);
 
         if(strcmp(nama_ortu, "null") == 0){
             makeTree(nama_simpul, &T);

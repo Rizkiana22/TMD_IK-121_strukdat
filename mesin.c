@@ -1,56 +1,5 @@
 #include "header.h"
 
-int idx; // index
-int wlen; // panjang current word
-char cw[250]; // current word
-
-// nyalakan mesin
-void start(char pita[]){
-    // set index dan panjang kata menjadi 0
-    idx = 0;
-    wlen = 0;
-
-
-    while (pita[idx] == '#'){ // ignore pagar
-        idx++;
-    }
-
-
-    // ambil kata masukkan dalam current word
-    while ((pita[idx] != '#') && (pita[idx] != '\0') && (pita[idx] != '\n')){ // ambil kata 
-        cw[wlen] = pita[idx];
-        wlen++;
-        idx++;
-    }
-    cw[wlen] = '\0'; // akhiri dengan null terminator
-}
-
-
-// pindah next kata
-void inc(char pita[]){
-    wlen = 0; // set panjang kata jadi 0 (memastikan)
-
-
-    while (pita[idx] == '#'){ // ignore blank
-        idx++;
-    }
-
-
-    // masukkan kata baru
-    while ((pita[idx] != '#') && (pita[idx] != '\0') && (pita[idx] != '\n')){
-        cw[wlen] = pita[idx];
-        wlen++;
-        idx++;
-    }
-    cw[wlen] = '\0'; // akhiri lagi
-}
-
-// mengembalikan current word
-char* getcw(){
-    return cw;
-}
-
-
 void makeTree(char nama_simpul[], tree *T) { // prosedur membuat tree
     simpul *node = (simpul *)malloc(sizeof(simpul));
     strcpy(node->kontainer.nama_simpul, nama_simpul);
@@ -311,12 +260,6 @@ void printTreePreOrder(simpul *root , int level, int cabang){ // print tree preo
         //         printf(" ");
         //     }
         // }
-        
-        /*
-        cabang = -1 menandakan bahwa simpul tersebut merupakan root dari file system
-        cabang = 1 menandakan bahwa simpul tersebut merupakan anak tunggal atau anak terakhir
-        cabang = 0 menandakan bahwa simpul tersebut bukan merupakan anak tunggal atau bukan anak terakhir
-        */
 
         // print cabang
         // if(cabang == 0){
@@ -324,17 +267,11 @@ void printTreePreOrder(simpul *root , int level, int cabang){ // print tree preo
         // }else if(cabang == 1){
         //     printf("└──");
         // }
-       
-        // if (root->kontainer.isdirectory == 1) { // print direktori
-        //     printf("[d] %s (%dkB)\n", root->kontainer.nama, root->kontainer.size);
-        // } else { // print file
-        //     printf("[f] %s (%dkB)\n", root->kontainer.nama, root->kontainer.size);
-        // }
 
-        printf("[simpul] %s\n", root->kontainer.nama_simpul);
+        printf("[-%s-]\n", root->kontainer.nama_simpul);
         eKolom *eCol = root->col;
         while(eCol != NULL){
-            printf("-%s\n", eCol->kontainer_kol.konsekuensi);
+            printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
             eCol = eCol->next_kol;
         }
         printf("\n");

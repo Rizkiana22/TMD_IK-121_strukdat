@@ -32,9 +32,6 @@ typedef struct {
     simpul *root;
 } tree;
 
-void start(char pita[]);
-void inc(char pita[]);
-char* getcw();
 void makeTree(char nama_simpul[], tree *T);
 void addChild(char nama_simpul[], simpul *root);
 void del_simpul(simpul* root);
