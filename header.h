@@ -37,14 +37,21 @@ void addChild(char nama_simpul[], simpul *root);
 void del_simpul(simpul* root);
 void del_child(simpul* target, simpul* root);
 simpul* findSimpul(char nama_simpul[], simpul* root);
+simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *print[]);
 void HitungIndentasi(simpul *root , int level, int indentasi[]);
 void printTreePreOrder(simpul *root , int level, int indentasi[]);
 void addLastK(char konsekuensi[], simpul *root);
 
+// Struct untuk menyimpan data nilai matkul
+typedef struct {
+    char nama[250];
+} data;
 
+// Node dari linked list
 typedef struct elm *alamatelmt;
+
 typedef struct elm {
-    simpul *node;
+    data kontainer;
     alamatelmt next;
 } elemen;
 
@@ -53,3 +60,11 @@ typedef struct {
     elemen *first;
     elemen *last;
 } queue;
+
+void createEmpty(queue *Q);
+int isEmpty(queue Q);
+int countElement(queue Q);
+void enqueue(char nama[], queue *Q);
+void dequeue(queue *Q);
+void printQueue(queue Q);
+

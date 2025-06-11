@@ -203,6 +203,60 @@ simpul* findSimpul(char nama_simpul[], simpul* root){ // function mencari simpul
     return result; // mengembalikan hasil
 }
 
+simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *print[]){ // function mencari simpul target
+    simpul* result = NULL;
+    // kondisi ketika root ada
+    if (root != NULL) {
+        // jika target ditemukan di root
+        if (strcmp(root->kontainer.nama_simpul, nama_simpul) == 0){
+            result = root;
+        }else{ // jika target bukan root (berarti target anak cucunya)
+            simpul* current = root->child;
+            // Cek apakah root punya anak
+            if (current != NULL) {
+                // jika current hanya satu anak
+                print[level] = current;
+                *kedalaman = level;
+                if (current->sibling == NULL) {
+                    if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0)
+                        result = current; // isi result dengan current
+                    else{
+                        result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print); // Jika bukan, cari secara rekursif di anak
+                    }
+                }else {
+                    int found = 0;
+                    // Jika memiliki lebih dari satu anak
+                    while (current->sibling != root->child && found == 0) {
+                        // Found condition
+                        if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0){
+                            result = current;
+                            found = 1;
+                        }else {// jika tidak ditemukan, cari ke anak
+                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print);
+                            current = current->sibling;
+                            if (result != NULL){
+                                found = 1;
+                            }
+                        }
+                    }
+                    // proses anak terakhir
+                    if (found == 0) {
+                        if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0){
+                            // print[level] = root;
+                            // *kedalaman = level; 
+                            result = current; // Found condition
+                        }
+                        else{
+                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print); // jika tidak ditemukan cari lagi secara rekursif
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result; // mengembalikan hasil
+}
+
 void addFirstK(char konsekuensi[], simpul *root) {     
     eKolom *baru;   
     baru = (eKolom *) malloc(sizeof(eKolom));   
@@ -327,3 +381,95 @@ void printTreePreOrder(simpul *root , int level, int indentasi[]){ // print tree
     }
 }
 
+// Membuat queue kosong
+void createEmpty(queue *Q) {
+    Q->first = NULL;
+    Q->last = NULL;
+}
+
+// Mengecek apakah queue kosong
+int isEmpty(queue Q) {
+    int hasil = 0;
+    if(Q.first == NULL){
+        hasil = 1;
+    }
+    return hasil;
+}
+
+int countElement(queue Q) {
+    int hasil = 0;
+
+    if (Q.first != NULL) { /* queue tidak kosong */
+        elemen *bantu;
+
+        /* inisialisasi */
+        bantu = Q.first;
+
+        while (bantu != NULL) {
+            /* proses */
+            hasil = hasil + 1;
+
+            /* iterasi */
+            bantu = bantu->next;
+        }
+    }
+
+    return hasil;
+}
+
+void enqueue(char nama[], queue *Q) {
+    elemen *baru;
+    baru = (elemen *) malloc(sizeof(elemen));
+
+    // Mengisi data
+    strcpy(baru->kontainer.nama, nama);
+    baru->next = NULL;
+
+    // Jika queue masih kosong
+    if ((*Q).first == NULL) {
+        (*Q).first = baru;
+    } else {
+        // Tambahkan ke akhir queue
+        (*Q).last->next = baru;
+    }
+
+    // Update pointer last
+    (*Q).last = baru;
+    baru = NULL;
+}
+
+void dequeue(queue *Q) {
+    if ((*Q).first != NULL) { /* jika queue bukan queue kosong */
+        elemen *hapus = (*Q).first;
+
+        if (countElement(*Q) == 1) {
+            // Jika hanya ada satu elemen
+            (*Q).first = NULL;
+            (*Q).last = NULL;
+        } else {
+            // Pindah ke elemen berikutnya
+            (*Q).first = (*Q).first->next;
+            hapus->next = NULL;
+        }
+
+        free(hapus);
+    }
+}
+
+
+void printQueue(queue Q) {
+    if (Q.first != NULL) {
+
+        elemen *bantu = Q.first;
+        while (bantu != NULL) {
+            printf("-%s\n", bantu->kontainer.nama);
+            
+            // Iterasi ke elemen berikutnya
+            bantu = bantu->next;
+        }
+
+    } else {
+        // Proses jika queue kosong
+        printf("Queue kosong\n");
+    }
+}
