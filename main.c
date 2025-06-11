@@ -36,6 +36,10 @@ int main() {
 
 
     }
-    printTreePreOrder(T.root, 0, -1);
+    int indentasi[100] = {0};
+    HitungIndentasi(T.root, 0, indentasi);
+    printTreePreOrder(T.root, 0, indentasi);
+
+    
     return 0;
 }

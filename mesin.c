@@ -251,26 +251,58 @@ void addLastK(char konsekuensi[], simpul *root) {
     }  
 }
 
+void HitungIndentasi(simpul *root , int level, int indentasi[]){ // print tree preorder dengan indentasi dan cabang (final revisi)
+    if (root != NULL) {
+        int panjangSimpul = strlen(root->kontainer.nama_simpul);
+        eKolom *eCol = root->col;
+        while(eCol != NULL){
+            int panjangKolom = strlen(eCol->kontainer_kol.konsekuensi);
+            if(indentasi[level] < panjangKolom + 3){
+                indentasi[level] = panjangKolom + 3;
+            }
+            eCol = eCol->next_kol;
+        }
+        if(indentasi[level] < panjangSimpul + 6){
+            indentasi[level] = panjangSimpul + 6;
+        }
+        simpul *bantu = root->child; // isi pointer bantu dengan child untuk loop
+        if (bantu != NULL) {
+            if (bantu->sibling == NULL) {
+                /* jika memiliki satu simpul anak */
+                HitungIndentasi(bantu, level + 1, indentasi); // rekursif
+            } else {
+                /* jika memiliki banyak simpul anak */
+                /* mencetak simpul anak */
+                
+                while (bantu->sibling != root->child) {
+                    HitungIndentasi(bantu, level + 1, indentasi);
+                    bantu = bantu->sibling;
+                }
+                /* memproses simpul anak terakhir karena belum terproses dalam pengulangan */
+                HitungIndentasi(bantu, level + 1, indentasi); // rekursif
+            }
+        }
+    }
+}
 
-void printTreePreOrder(simpul *root , int level, int cabang){ // print tree preorder dengan indentasi dan cabang (final revisi)
+void printTreePreOrder(simpul *root , int level, int indentasi[]){ // print tree preorder dengan indentasi dan cabang (final revisi)
     if (root != NULL) { 
-        // int spasi = (level - 1) * 4; // menghitung jumlah spasi setiap level (untuk indentasi)
-        // if (level > 0) { // Kalau bukan root, print indentasi dan garis cabang dulu
-        //     for (int i = 0; i < spasi + 1; i++) { // print spasi
-        //         printf(" ");
-        //     }
-        // }
-
-        // print cabang
-        // if(cabang == 0){
-        //     printf("├──");
-        // }else if(cabang == 1){
-        //     printf("└──");
-        // }
-
+        for (int i = 0; i < level; i++) { // print spasi
+            for(int j = 0; j < indentasi[i]; j++){
+                printf(" ");
+            }
+        }
+        
         printf("[-%s-]\n", root->kontainer.nama_simpul);
         eKolom *eCol = root->col;
         while(eCol != NULL){
+            if (level > 0) { // Kalau bukan root, print indentasi dan garis cabang dulu
+                for (int i = 0; i < level; i++) { // print spasi
+                    for(int j = 0; j < indentasi[i]; j++){
+                        printf(" ");
+                    }
+                }
+            }
             printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
             eCol = eCol->next_kol;
         }
@@ -280,19 +312,16 @@ void printTreePreOrder(simpul *root , int level, int cabang){ // print tree preo
         if (bantu != NULL) {
             if (bantu->sibling == NULL) {
                 /* jika memiliki satu simpul anak */
-                cabang = 1;
-                printTreePreOrder(bantu, level + 1, cabang); // rekursif
+                printTreePreOrder(bantu, level + 1, indentasi); // rekursif
             } else {
                 /* jika memiliki banyak simpul anak */
                 /* mencetak simpul anak */
-                cabang = 0;
                 while (bantu->sibling != root->child) {
-                    printTreePreOrder(bantu, level + 1, cabang);
+                    printTreePreOrder(bantu, level + 1, indentasi);
                     bantu = bantu->sibling;
                 }
                 /* memproses simpul anak terakhir karena belum terproses dalam pengulangan */
-                cabang = 1;
-                printTreePreOrder(bantu, level + 1, cabang); // rekursif
+                printTreePreOrder(bantu, level + 1, indentasi); // rekursif
             }
         }
     }

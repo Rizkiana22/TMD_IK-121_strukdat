@@ -37,5 +37,19 @@ void addChild(char nama_simpul[], simpul *root);
 void del_simpul(simpul* root);
 void del_child(simpul* target, simpul* root);
 simpul* findSimpul(char nama_simpul[], simpul* root);
-void printTreePreOrder(simpul *root , int level, int cabang);
+void HitungIndentasi(simpul *root , int level, int indentasi[]);
+void printTreePreOrder(simpul *root , int level, int indentasi[]);
 void addLastK(char konsekuensi[], simpul *root);
+
+
+typedef struct elm *alamatelmt;
+typedef struct elm {
+    simpul *node;
+    alamatelmt next;
+} elemen;
+
+// Struct untuk queue
+typedef struct {
+    elemen *first;
+    elemen *last;
+} queue;
