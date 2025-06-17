@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+/*----------Bagian N-er Tree----------*/
 // struct isi nama simpul
 typedef struct{
     char nama_simpul[250]; 
@@ -23,7 +24,7 @@ typedef struct eklm {
 typedef struct smp *alamatsimpul;
 typedef struct smp {
     data_simpul kontainer;
-    eKolom *col;
+    eKolom *col; // pointer linked list ke konsekuensi
     alamatsimpul sibling;
     alamatsimpul child;
 } simpul;
@@ -39,17 +40,17 @@ void del_child(simpul* target, simpul* root);
 simpul* findSimpul(char nama_simpul[], simpul* root);
 simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *print[]);
 void HitungIndentasi(simpul *root , int level, int indentasi[]);
-void printTreePreOrder(simpul *root , int level, int indentasi[]);
-void addLastK(char konsekuensi[], simpul *root);
+void printTreePreOrder(simpul *root , int level, int indentasi[], simpul *root2);
+void addLastK(char konsekuensi[], simpul *root); // prosedur untuk menambahkan konsekuensi di paling akhir
 
-// Struct untuk menyimpan data nilai matkul
+/*----------Bagian Queue----------*/
+// Struct untuk menyimpan data queue
 typedef struct {
     char nama[250];
 } data;
 
-// Node dari linked list
+// struct elemen queue
 typedef struct elm *alamatelmt;
-
 typedef struct elm {
     data kontainer;
     alamatelmt next;
@@ -61,10 +62,15 @@ typedef struct {
     elemen *last;
 } queue;
 
+// prosedur fungsi queue
 void createEmpty(queue *Q);
 int isEmpty(queue Q);
 int countElement(queue Q);
 void enqueue(char nama[], queue *Q);
 void dequeue(queue *Q);
 void printQueue(queue Q);
+
+/*----------Bagian Pruning----------*/
+// prosedur pruning
+void pruning(char simpul_cari[250], simpul *root, int *kedalaman, simpul *path[], queue Q);
 

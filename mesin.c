@@ -203,7 +203,7 @@ simpul* findSimpul(char nama_simpul[], simpul* root){ // function mencari simpul
     return result; // mengembalikan hasil
 }
 
-simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *print[]){ // function mencari simpul target
+simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *path[]){ // function mencari simpul target dan menyimpan jalur ke target
     simpul* result = NULL;
     // kondisi ketika root ada
     if (root != NULL) {
@@ -215,24 +215,28 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
             // Cek apakah root punya anak
             if (current != NULL) {
                 // jika current hanya satu anak
-                print[level] = current;
-                *kedalaman = level;
                 if (current->sibling == NULL) {
+                    path[level] = current; // simpan jalur
+                    *kedalaman = level; // perbarui kedalaman
+
                     if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0)
                         result = current; // isi result dengan current
                     else{
-                        result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print); // Jika bukan, cari secara rekursif di anak
+                        result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path); // Jika bukan, cari secara rekursif di anak
                     }
                 }else {
                     int found = 0;
                     // Jika memiliki lebih dari satu anak
                     while (current->sibling != root->child && found == 0) {
+                        path[level] = current; // simpan jalur
+                        *kedalaman = level; // perbarui kedalaman
+
                         // Found condition
                         if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0){
                             result = current;
                             found = 1;
                         }else {// jika tidak ditemukan, cari ke anak
-                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print);
+                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path);
                             current = current->sibling;
                             if (result != NULL){
                                 found = 1;
@@ -241,13 +245,14 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
                     }
                     // proses anak terakhir
                     if (found == 0) {
+                        path[level] = current; // simpan jalur
+                        *kedalaman = level; // perbarui kedalaman
+
                         if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0){
-                            // print[level] = root;
-                            // *kedalaman = level; 
                             result = current; // Found condition
                         }
                         else{
-                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, print); // jika tidak ditemukan cari lagi secara rekursif
+                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path); // jika tidak ditemukan cari lagi secara rekursif
                         }
                     }
                 }
@@ -257,12 +262,13 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
     return result; // mengembalikan hasil
 }
 
-void addFirstK(char konsekuensi[], simpul *root) {     
+
+void addFirstK(char konsekuensi[], simpul *root) { // addFirst kolom di simpul
     eKolom *baru;   
     baru = (eKolom *) malloc(sizeof(eKolom));   
     strcpy(baru->kontainer_kol.konsekuensi, konsekuensi);             
     
-
+    
     if((*root).col == NULL) {     
         baru->next_kol = NULL;   
     } else {         
@@ -273,12 +279,12 @@ void addFirstK(char konsekuensi[], simpul *root) {
     baru = NULL;    
 }
 
-void addAfterK(eKolom *prev, char konsekuensi[]) {      
+void addAfterK(eKolom *prev, char konsekuensi[]) { // addAfter kolom di simpul   
     eKolom *baru; 
     baru = (eKolom *) malloc(sizeof(eKolom)); 
     strcpy(baru->kontainer_kol.konsekuensi, konsekuensi); 
     
-
+    
     if(prev->next_kol == NULL) {      
         baru->next_kol = NULL; 
     } else { 
@@ -289,7 +295,7 @@ void addAfterK(eKolom *prev, char konsekuensi[]) {
     baru = NULL;   
 }
 
-void addLastK(char konsekuensi[], simpul *root) { 
+void addLastK(char konsekuensi[], simpul *root) { // addLast kolom di simpul
     if((*root).col == NULL) {     
         /* jika list adalah list kosong */     
         addFirstK(konsekuensi, root); 
@@ -305,20 +311,31 @@ void addLastK(char konsekuensi[], simpul *root) {
     }  
 }
 
-void HitungIndentasi(simpul *root , int level, int indentasi[]){ // print tree preorder dengan indentasi dan cabang (final revisi)
+void HitungIndentasi(simpul *root , int level, int indentasi[]){ // menghitung indentasi tiap level
     if (root != NULL) {
-        int panjangSimpul = strlen(root->kontainer.nama_simpul);
+        // menghitung panjang nama simpul
+        int panjangSimpul = strlen(root->kontainer.nama_simpul); 
+
+        // periksa kolom dari simpul
         eKolom *eCol = root->col;
         while(eCol != NULL){
+            // menghitung panjang nama konsekuensi di simpul
             int panjangKolom = strlen(eCol->kontainer_kol.konsekuensi);
+
+            // mencari nilai indentasi maksimal pada level ini
             if(indentasi[level] < panjangKolom + 3){
                 indentasi[level] = panjangKolom + 3;
             }
+
+            // lanjut ke kolom berikutnya
             eCol = eCol->next_kol;
         }
-        if(indentasi[level] < panjangSimpul + 6){
-            indentasi[level] = panjangSimpul + 6;
+
+        // cek apakah panjang nama simpul lebih panjang dibanding nilai indentasi saat ini (dari kolom)
+        if(indentasi[level] < panjangSimpul + 5){
+            indentasi[level] = panjangSimpul + 5;
         }
+
         simpul *bantu = root->child; // isi pointer bantu dengan child untuk loop
         if (bantu != NULL) {
             if (bantu->sibling == NULL) {
@@ -339,43 +356,48 @@ void HitungIndentasi(simpul *root , int level, int indentasi[]){ // print tree p
     }
 }
 
-void printTreePreOrder(simpul *root , int level, int indentasi[]){ // print tree preorder dengan indentasi dan cabang (final revisi)
+void printTreePreOrder(simpul *root , int level, int indentasi[], simpul *root2){ // print tree preorder dengan indentasi
     if (root != NULL) { 
-        for (int i = 0; i < level; i++) { // print spasi
+        // print indentasi sesuai level
+        for (int i = 0; i < level; i++) { 
             for(int j = 0; j < indentasi[i]; j++){
                 printf(" ");
             }
         }
         
-        printf("[-%s-]\n", root->kontainer.nama_simpul);
+        // print nama simpul
+        printf("[-%s-]\n", root->kontainer.nama_simpul); 
+
+        // print konsekuensi dari simpul
         eKolom *eCol = root->col;
         while(eCol != NULL){
-            if (level > 0) { // Kalau bukan root, print indentasi dan garis cabang dulu
-                for (int i = 0; i < level; i++) { // print spasi
-                    for(int j = 0; j < indentasi[i]; j++){
-                        printf(" ");
-                    }
+            for (int i = 0; i < level; i++) { // print spasi
+                for(int j = 0; j < indentasi[i]; j++){
+                    printf(" ");
                 }
             }
+            // print konsekuensi
             printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
+
+            // lanjut ke kolom berikutnya
             eCol = eCol->next_kol;
         }
         printf("\n");
-        simpul *bantu = root->child; // isi pointer bantu dengan child untuk loop
 
+        simpul *bantu = root->child; // isi pointer bantu dengan child untuk loop
         if (bantu != NULL) {
             if (bantu->sibling == NULL) {
                 /* jika memiliki satu simpul anak */
-                printTreePreOrder(bantu, level + 1, indentasi); // rekursif
+                printTreePreOrder(bantu, level + 1, indentasi, root2); // rekursif
             } else {
                 /* jika memiliki banyak simpul anak */
                 /* mencetak simpul anak */
                 while (bantu->sibling != root->child) {
-                    printTreePreOrder(bantu, level + 1, indentasi);
+                    printTreePreOrder(bantu, level + 1, indentasi, root2);
                     bantu = bantu->sibling;
                 }
                 /* memproses simpul anak terakhir karena belum terproses dalam pengulangan */
-                printTreePreOrder(bantu, level + 1, indentasi); // rekursif
+                printTreePreOrder(bantu, level + 1, indentasi, root2); // rekursif
             }
         }
     }
@@ -398,33 +420,33 @@ int isEmpty(queue Q) {
 
 int countElement(queue Q) {
     int hasil = 0;
-
+    
     if (Q.first != NULL) { /* queue tidak kosong */
         elemen *bantu;
-
+        
         /* inisialisasi */
         bantu = Q.first;
-
+        
         while (bantu != NULL) {
             /* proses */
             hasil = hasil + 1;
-
+            
             /* iterasi */
             bantu = bantu->next;
         }
     }
-
+    
     return hasil;
 }
 
 void enqueue(char nama[], queue *Q) {
     elemen *baru;
     baru = (elemen *) malloc(sizeof(elemen));
-
+    
     // Mengisi data
     strcpy(baru->kontainer.nama, nama);
     baru->next = NULL;
-
+    
     // Jika queue masih kosong
     if ((*Q).first == NULL) {
         (*Q).first = baru;
@@ -432,7 +454,7 @@ void enqueue(char nama[], queue *Q) {
         // Tambahkan ke akhir queue
         (*Q).last->next = baru;
     }
-
+    
     // Update pointer last
     (*Q).last = baru;
     baru = NULL;
@@ -441,7 +463,7 @@ void enqueue(char nama[], queue *Q) {
 void dequeue(queue *Q) {
     if ((*Q).first != NULL) { /* jika queue bukan queue kosong */
         elemen *hapus = (*Q).first;
-
+        
         if (countElement(*Q) == 1) {
             // Jika hanya ada satu elemen
             (*Q).first = NULL;
@@ -451,15 +473,15 @@ void dequeue(queue *Q) {
             (*Q).first = (*Q).first->next;
             hapus->next = NULL;
         }
-
+        
         free(hapus);
     }
 }
 
 
-void printQueue(queue Q) {
+void printQueue(queue Q) { // print isi queue
     if (Q.first != NULL) {
-
+        
         elemen *bantu = Q.first;
         while (bantu != NULL) {
             printf("-%s\n", bantu->kontainer.nama);
@@ -467,9 +489,64 @@ void printQueue(queue Q) {
             // Iterasi ke elemen berikutnya
             bantu = bantu->next;
         }
-
+        
     } else {
         // Proses jika queue kosong
         printf("Queue kosong\n");
     }
+}
+
+
+void pruning(char simpul_cari[250], simpul *root, int *kedalaman, simpul *path[], queue Q){ // prosedur print pruning
+    simpul *cek = findSimpulPrint(simpul_cari, root, 1, kedalaman, path); // cari jalur ke simpul target (nanti jalur disimpan di array path)
+    if(cek != NULL){ // jika taget ditemukan
+        int spasi = 0; // inisialisasi jumlah spasi
+        
+        // print simpul dengan konsekuensinya
+        for(int i = 0; i <= *kedalaman; i++){
+            // print indentasi atau spasi
+            for(int i = 0; i < spasi; i++){
+                printf(" ");
+            } 
+
+            // print nama simpul
+            printf("[-%s-]\n", path[i]->kontainer.nama_simpul);
+            
+            // menghitung panjang nama simpul
+            int panjangSimpul = strlen(path[i]->kontainer.nama_simpul);
+
+            // print kolom dari simpul
+            eKolom *eCol = path[i]->col;
+            int panjangKolom = 0; // inisialisasi panjang kolom
+            while(eCol != NULL){
+                // mencari panjang maksimal pada konsekuensi simpul
+                if(panjangKolom < strlen(eCol->kontainer_kol.konsekuensi)){
+                    panjangKolom = strlen(eCol->kontainer_kol.konsekuensi);
+                }
+                // print indentasi atau spasi
+                for(int i = 0; i < spasi; i++){ 
+                    printf(" ");
+                }
+                // simpan konsekuensi ke queue untuk ditampilkan jadi daftar nanti
+                enqueue(eCol->kontainer_kol.konsekuensi, &Q);
+                // print konsekuensi
+                printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
+                // lanjut ke kolom berikutnya
+                eCol = eCol->next_kol;
+            }
+
+            // cek apakah panjang kolom terpanjang lebih panjang dibanding panjang nama simpul
+            if(panjangKolom + 3 > panjangSimpul + 5){
+                spasi += panjangKolom + 3;
+            }else{
+                spasi += panjangSimpul + 5;
+            }
+            printf("\n");
+        }
+    }
+
+    // print daftar konsekuensi yang dijalani
+    printf("Konsekuensi yang Dijalani dengan Pilihan %s:\n", simpul_cari);
+    // print isi queue yang berisi konsekuensi
+    printQueue(Q);
 }

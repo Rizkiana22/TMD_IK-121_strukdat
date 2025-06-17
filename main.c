@@ -1,85 +1,80 @@
+/*Saya Muhammad Rizkiana Pratama dengan NIM 2404421 mengerjakan tugas tugas masa depan dalam mata kuliah struktur data dan algoritma 
+untuk keberkahan-Nya maka saya tidak akan melakukan kecurangan seperti yang telah di spesifikasikan*/
+
 #include "header.h"
 
+/*Analisis big O:
+1. Input simpul sebanyak n dengan konsekuensi sebanyak m dan Menambahkan simpul dan konsekuensi ke dalam tree menggunakan DFS :
+    untuk menambahkan simpul perlu menggunakan find_simpul (DFS) 
+    find_simpul dijalankan untuk mencari posisi tempat penambahan 
+    kasus terburuknya bisa butuh mengunjungi semua simpul maka O(n) karena simpul input sebanyak n, maka input simpul O(n^2 + m)
+2. Hitung indentasi :
+    hitung indentasi memiliki kompleksitas O(n + m) n = banyak simpul m = banyak konsekuensi, panjang konsekuensi dihitung juga
+3. Print tree :
+    print tree memiliki kompleksitas O(n + m) n = banyak simpul m = banyak konsekuensi
+4. Pruning :
+    pruning menggunakan DFS yang berarti O(n)
+
+kesimpulan :
+Program saya memiliki kompleksitas O(n^2 + m) n = banyak simpul m = banyak konsekuensi
+*/
 int main() {
+    // inisialisasi struktur data
     tree T;
     queue Q;
+
+    // create queue
     createEmpty(&Q);
+
+    // inisialisasi variabel untuk input
     char nama_simpul[250];
     char nama_ortu[250];
     char nama_konsekuensi[250];
     int jumlah_konsekuensi;
 
-    char pita[300]; // membuat array dengan panjang 300
-    int n;
-    scanf("%d", &n);
-    simpul *cari = NULL;
-    for(int i = 0; i < n; i++){
-        scanf(" %[^#\n]#%[^#\n]#%d", nama_simpul, nama_ortu, &jumlah_konsekuensi);
 
-        if(strcmp(nama_ortu, "null") == 0){
+    int n; // jumlah input simpul
+    scanf("%d", &n); // isi jumlah input simpul
+
+    simpul *cari = NULL; // inisialisasi simpul cari
+    for(int i = 0; i < n; i++){
+        scanf(" %[^#\n]#%[^#\n]#%d", nama_simpul, nama_ortu, &jumlah_konsekuensi); // input simpul, simpul ortu, dan jumlah konsekuensi
+        if(strcmp(nama_ortu, "null") == 0){ // jika nama ortu 'null', maka make tree
             makeTree(nama_simpul, &T);
             if(T.root != NULL){
-                for(int j = 0; j < jumlah_konsekuensi; j++){
+                for(int j = 0; j < jumlah_konsekuensi; j++){ // isi konsekuensi
                     scanf("%s", nama_konsekuensi);
                     addLastK(nama_konsekuensi, T.root);
                 }
             }
-        }else{
-            cari = findSimpul(nama_ortu, T.root);
-            if(cari != NULL){
-                addChild(nama_simpul, cari);
-                cari = findSimpul(nama_simpul, T.root);
-                for(int j = 0; j < jumlah_konsekuensi; j++){
+        }else{ // menambahkan simpul baru
+            cari = findSimpul(nama_ortu, T.root); // mencari simpul ortu
+            if(cari != NULL){ // jika simpul ortu ditemukan
+                addChild(nama_simpul, cari); // tambah simpul baru
+                cari = findSimpul(nama_simpul, T.root); // cari simpul baru
+                for(int j = 0; j < jumlah_konsekuensi; j++){ // isi konsekuensi sebanyak jumlah konsekuensi
                     scanf("%s", nama_konsekuensi);
-                    addLastK(nama_konsekuensi, cari);
+                    addLastK(nama_konsekuensi, cari); 
                 }
             }
         }
 
 
     }
-    scanf("%s", nama_simpul);
-    int indentasi[100] = {0};
-    HitungIndentasi(T.root, 0, indentasi);
-    printTreePreOrder(T.root, 0, indentasi);
-    simpul *print[100];
-    int kedalaman;
+    char simpul_cari[250]; // inisialisasi variabel untuk mencari simpul target
+    scanf("%s", simpul_cari); // mengisi simpul_cari
 
-    print[0] = T.root;
-    simpul *cek = findSimpulPrint(nama_simpul, T.root, 1, &kedalaman, print);
-    if(cek != NULL){
-        int spasi = 0;
-        for(int i = 0; i <= kedalaman; i++){
-            for(int i = 0; i < spasi; i++){
-                printf(" ");
-            }
-            printf("[-%s-]\n", print[i]->kontainer.nama_simpul);
 
-            int panjangSimpul = strlen(print[i]->kontainer.nama_simpul);
-            eKolom *eCol = print[i]->col;
-            int panjangKolom = 0;
-            while(eCol != NULL){
-                if(panjangKolom < strlen(eCol->kontainer_kol.konsekuensi)){
-                    panjangKolom = strlen(eCol->kontainer_kol.konsekuensi);
-                }
-                for(int i = 0; i < spasi; i++){
-                    printf(" ");
-                }
-                enqueue(eCol->kontainer_kol.konsekuensi, &Q);
-                printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
-                eCol = eCol->next_kol;
-            }
-            if(panjangKolom + 3 > panjangSimpul + 6){
-                spasi += panjangKolom + 3;
-            }else{
-                spasi += panjangSimpul + 6;
-            }
-            printf("\n");
-        }
-    }else{
-        printf("LMAO\n");
+    int indentasi[100] = {0}; // array untuk menyimpan jumlah spasi atau indentasi per level 
+    HitungIndentasi(T.root, 0, indentasi); // menghitung indentasi atau jumlah spasi per level 
+    printTreePreOrder(T.root, 0, indentasi, T.root); // print Tree dengan modifikasi indentasi
+
+    // print pruning
+    simpul *path[100]; // array simpul untuk menyimpan simpuljalur ke target
+    int kedalaman = 0; // variabel untuk menghitung seberapa dalam atau berapa simpul ke target
+    if(T.root != NULL){ // jika tree ada
+        path[0] = T.root; // menyimpan root atau simpul pertama ke array path
+        pruning(simpul_cari, T.root, &kedalaman, path, Q); // panggil prosedur print prunning
     }
-    printf("Konsekuensi yang Dijalani dengan Pilihan %s:\n", nama_simpul);
-    printQueue(Q);
     return 0;
 }
