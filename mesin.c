@@ -203,7 +203,7 @@ simpul* findSimpul(char nama_simpul[], simpul* root){ // function mencari simpul
     return result; // mengembalikan hasil
 }
 
-simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *path[]){ // function mencari simpul target dan menyimpan jalur ke target
+simpul* findSimpulJalur(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *path[]){ // function mencari simpul target dan menyimpan jalur ke target
     simpul* result = NULL;
     // kondisi ketika root ada
     if (root != NULL) {
@@ -222,7 +222,7 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
                     if (strcmp(current->kontainer.nama_simpul, nama_simpul) == 0)
                         result = current; // isi result dengan current
                     else{
-                        result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path); // Jika bukan, cari secara rekursif di anak
+                        result = findSimpulJalur(nama_simpul, current, level + 1, kedalaman, path); // Jika bukan, cari secara rekursif di anak
                     }
                 }else {
                     int found = 0;
@@ -236,7 +236,7 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
                             result = current;
                             found = 1;
                         }else {// jika tidak ditemukan, cari ke anak
-                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path);
+                            result = findSimpulJalur(nama_simpul, current, level + 1, kedalaman, path);
                             current = current->sibling;
                             if (result != NULL){
                                 found = 1;
@@ -252,7 +252,7 @@ simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedala
                             result = current; // Found condition
                         }
                         else{
-                            result = findSimpulPrint(nama_simpul, current, level + 1, kedalaman, path); // jika tidak ditemukan cari lagi secara rekursif
+                            result = findSimpulJalur(nama_simpul, current, level + 1, kedalaman, path); // jika tidak ditemukan cari lagi secara rekursif
                         }
                     }
                 }
@@ -403,150 +403,34 @@ void printTreePreOrder(simpul *root , int level, int indentasi[], simpul *root2)
     }
 }
 
-// Membuat queue kosong
-void createEmpty(queue *Q) {
-    Q->first = NULL;
-    Q->last = NULL;
-}
-
-// Mengecek apakah queue kosong
-int isEmpty(queue Q) {
-    int hasil = 0;
-    if(Q.first == NULL){
-        hasil = 1;
-    }
-    return hasil;
-}
-
-int countElement(queue Q) {
-    int hasil = 0;
-    
-    if (Q.first != NULL) { /* queue tidak kosong */
-        elemen *bantu;
-        
-        /* inisialisasi */
-        bantu = Q.first;
-        
-        while (bantu != NULL) {
-            /* proses */
-            hasil = hasil + 1;
-            
-            /* iterasi */
-            bantu = bantu->next;
-        }
-    }
-    
-    return hasil;
-}
-
-void enqueue(char nama[], queue *Q) {
-    elemen *baru;
-    baru = (elemen *) malloc(sizeof(elemen));
-    
-    // Mengisi data
-    strcpy(baru->kontainer.nama, nama);
-    baru->next = NULL;
-    
-    // Jika queue masih kosong
-    if ((*Q).first == NULL) {
-        (*Q).first = baru;
-    } else {
-        // Tambahkan ke akhir queue
-        (*Q).last->next = baru;
-    }
-    
-    // Update pointer last
-    (*Q).last = baru;
-    baru = NULL;
-}
-
-void dequeue(queue *Q) {
-    if ((*Q).first != NULL) { /* jika queue bukan queue kosong */
-        elemen *hapus = (*Q).first;
-        
-        if (countElement(*Q) == 1) {
-            // Jika hanya ada satu elemen
-            (*Q).first = NULL;
-            (*Q).last = NULL;
-        } else {
-            // Pindah ke elemen berikutnya
-            (*Q).first = (*Q).first->next;
-            hapus->next = NULL;
-        }
-        
-        free(hapus);
-    }
-}
-
-
-void printQueue(queue Q) { // print isi queue
-    if (Q.first != NULL) {
-        
-        elemen *bantu = Q.first;
-        while (bantu != NULL) {
-            printf("-%s\n", bantu->kontainer.nama);
-            
-            // Iterasi ke elemen berikutnya
-            bantu = bantu->next;
-        }
-        
-    } else {
-        // Proses jika queue kosong
-        printf("Queue kosong\n");
-    }
-}
-
-
-void pruning(char simpul_cari[250], simpul *root, int *kedalaman, simpul *path[], queue Q){ // prosedur print pruning
-    simpul *cek = findSimpulPrint(simpul_cari, root, 1, kedalaman, path); // cari jalur ke simpul target (nanti jalur disimpan di array path)
-    if(cek != NULL){ // jika taget ditemukan
-        int spasi = 0; // inisialisasi jumlah spasi
-        
-        // print simpul dengan konsekuensinya
-        for(int i = 0; i <= *kedalaman; i++){
-            // print indentasi atau spasi
-            for(int i = 0; i < spasi; i++){
-                printf(" ");
-            } 
-
-            // print nama simpul
-            printf("[-%s-]\n", path[i]->kontainer.nama_simpul);
-            
-            // menghitung panjang nama simpul
-            int panjangSimpul = strlen(path[i]->kontainer.nama_simpul);
-
-            // print kolom dari simpul
-            eKolom *eCol = path[i]->col;
-            int panjangKolom = 0; // inisialisasi panjang kolom
-            while(eCol != NULL){
-                // mencari panjang maksimal pada konsekuensi simpul
-                if(panjangKolom < strlen(eCol->kontainer_kol.konsekuensi)){
-                    panjangKolom = strlen(eCol->kontainer_kol.konsekuensi);
-                }
-                // print indentasi atau spasi
-                for(int i = 0; i < spasi; i++){ 
-                    printf(" ");
-                }
-                // simpan konsekuensi ke queue untuk ditampilkan jadi daftar nanti
-                enqueue(eCol->kontainer_kol.konsekuensi, &Q);
-                // print konsekuensi
-                printf(" -%s\n", eCol->kontainer_kol.konsekuensi);
-                // lanjut ke kolom berikutnya
-                eCol = eCol->next_kol;
+void pruning(simpul *parent, simpul *node, int level, simpul *path[]){
+    if(node != NULL){
+        // Simpan simpul awal atau anak pertama untuk menghentikan loop
+        simpul *awal = node;
+        /*Gunakan do while agar simpul tunggal tetap diperiksa
+        Kalau pakai while biasa, simpul tunggal (tanpa sibling) tidak akan masuk loop*/
+        do {
+            simpul *next = node->sibling;
+            if(node != path[level]){ // jika simpul bukan termasuk jalur maka akan di delete
+                del_child(node, parent);
+            }else{ // jika bukan cari ke anak cucunya
+                pruning(node, node->child, level + 1, path);
             }
-
-            // cek apakah panjang kolom terpanjang lebih panjang dibanding panjang nama simpul
-            if(panjangKolom + 3 > panjangSimpul + 5){
-                spasi += panjangKolom + 3;
-            }else{
-                spasi += panjangSimpul + 5;
-            }
-            printf("\n");
-        }
+            node = next; // next
+        } while(node != NULL && node != awal); // jika simpul tidak NULL dan tidak balik lagi ke anak pertama
     }
+}
 
-    // print daftar konsekuensi yang dijalani
+void printKonsekuensi(simpul *path[], int kedalaman, char simpul_cari[]){ // prosedur print konsekuensi
     printf("Konsekuensi yang Dijalani dengan Pilihan %s:\n", simpul_cari);
-    // print isi queue yang berisi konsekuensi
-    printQueue(Q);
+    for(int i = 0; i <= kedalaman; i++){
+        eKolom *eCol = path[i]->col; // inisialisasi kolom dari simpul
+        int panjangKolom = 0; // inisialisasi panjang kolom
+        // print konsekuensi dari sebuah simpul di path
+        while(eCol != NULL){
+            printf("-%s\n", eCol->kontainer_kol.konsekuensi);
+            // lanjut ke kolom berikutnya
+            eCol = eCol->next_kol;
+        }
+    }
 }

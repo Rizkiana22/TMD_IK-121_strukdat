@@ -38,39 +38,19 @@ void addChild(char nama_simpul[], simpul *root);
 void del_simpul(simpul* root);
 void del_child(simpul* target, simpul* root);
 simpul* findSimpul(char nama_simpul[], simpul* root);
-simpul* findSimpulPrint(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *print[]);
+simpul* findSimpulJalur(char nama_simpul[], simpul* root, int level, int *kedalaman, simpul *path[]);
 void HitungIndentasi(simpul *root , int level, int indentasi[]);
 void printTreePreOrder(simpul *root , int level, int indentasi[], simpul *root2);
 void addLastK(char konsekuensi[], simpul *root); // prosedur untuk menambahkan konsekuensi di paling akhir
 
-/*----------Bagian Queue----------*/
-// Struct untuk menyimpan data queue
-typedef struct {
-    char nama[250];
-} data;
-
-// struct elemen queue
-typedef struct elm *alamatelmt;
-typedef struct elm {
-    data kontainer;
-    alamatelmt next;
-} elemen;
-
-// Struct untuk queue
-typedef struct {
-    elemen *first;
-    elemen *last;
-} queue;
-
-// prosedur fungsi queue
-void createEmpty(queue *Q);
-int isEmpty(queue Q);
-int countElement(queue Q);
-void enqueue(char nama[], queue *Q);
-void dequeue(queue *Q);
-void printQueue(queue Q);
-
 /*----------Bagian Pruning----------*/
 // prosedur pruning
-void pruning(char simpul_cari[250], simpul *root, int *kedalaman, simpul *path[], queue Q);
+void pruning(simpul *parent, simpul *node, int level, simpul *path[]);
 
+/*----------Bagian Print Konsekuensi----------*/
+void printKonsekuensi(simpul *path[], int kedalaman, char simpul_cari[]);
+
+
+/*
+Perubahan : menghapus queue karena sudah tidak diperlukan, ternyata simpul harus benar-benar dihapus
+*/
