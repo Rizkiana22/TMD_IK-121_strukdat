@@ -2,7 +2,7 @@
 
 ## Deskripsi
 Program ini dibuat sebagai bagian dari tugas mata kuliah **Struktur Data dan Algoritma**.  
-Penulis: **Muhammad Rizkiana Pratama (NIM 2404421)**.  
+Pembuat: **Muhammad Rizkiana Pratama (NIM 2404421)**.  
 
 Program mengimplementasikan struktur data **tree** dengan fitur tambahan berupa pencatatan **konsekuensi** di setiap simpul. Program menerima input berupa daftar simpul beserta induknya, kemudian membangun tree menggunakan algoritma DFS. Setelah itu, program dapat menampilkan tree, memangkas tree berdasarkan jalur ke simpul target (*pruning*), dan menampilkan daftar konsekuensi yang terkait.
 
